@@ -1,0 +1,28 @@
+services:
+  db_postgres:
+    image: postgres:13.16-alpine3.20
+    container_name: app_db
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: test_db
+    restart: unless-stopped
+    networks:
+      - service-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 10s
+      retries: 3 
+  python:
+    build: './'
+    networks:
+      - service-net
+    depends_on:
+      db_postgres:
+        condition: service_healthy
+networks:
+  service-net:
+    driver: bridge
+volumes:
+  db-data:
